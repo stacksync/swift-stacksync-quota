@@ -21,11 +21,20 @@ class StackSyncQuotaMiddleware(object):
     @wsgify
     def __call__(self, req):
         self.app.logger.info('StackSync Qutoa start')
+        self.app.logger.info(req.environ)
 
-        response = self.authorize(req)
-        if response:
-            return response
+        #response = self.authorize(req)
+        #if response:
+        #    return response
+        #for key in req.environ.keys():
+        #    self.app.logger.info(key)
         
+        #self.app.logger.info('user_id: '+str(req.environ['HTTP_X_USER_ID']))
+        #self.app.logger.info('user: '+str(req.environ['HTTP_X_USER']))
+        #self.app.logger.info('user_name: '+str(req.environ['HTTP_X_USER_NAME']))
+        response = self.rpc_server.XmlRpcSyncHandler.getAvailableQuota(req.environ["HTTP_X_USER"])
+        
+        self.app.logger.info(response)
         return self.app
     
     def authorize(self, req):
