@@ -1,7 +1,7 @@
 from setuptools import setup
 import stacksync_quota
 
-setup(name='stacksync_quota_swift',
+setup(name='stacksync_quota',
       version=stacksync_quota.__version__,
       description='StackSync Quota module for OpenStack Swift',
       author='The StackSync Team',

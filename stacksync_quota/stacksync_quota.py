@@ -27,6 +27,14 @@ class StackSyncQuotaMiddleware(object):
             return response
         
         return self.app
+    
+    def authorize(self, req):
+        self.app.logger.info('StackSync API: authorize: path info: %s', req.path)
+        if 'swift.authorize' in req.environ:
+            resp = req.environ['swift.authorize'](req)
+            del req.environ['swift.authorize']
+            return resp
+        return HTTPUnauthorized()
 
 
 def filter_factory(global_conf, **local_conf):
