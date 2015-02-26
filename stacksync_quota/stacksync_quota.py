@@ -6,6 +6,7 @@ Created on 26 Feb 2015
 import os
 from swift.common.swob import wsgify, HTTPUnauthorized, HTTPBadRequest
 import xmlrpclib
+from swift.common.utils import get_logger
 import json
 
 class StackSyncQuotaMiddleware(object):
