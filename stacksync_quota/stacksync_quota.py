@@ -39,9 +39,12 @@ class StackSyncQuotaMiddleware(object):
         if not self.valid_request(req):
             # We only want to process PUT and DELETE requests
             return self.app
-            
-        quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(req.environ["HTTP_X_USER"])
-        #quota_info = self.client.sync_call(self.binding_name, "getAvailableQuota", [req.environ["HTTP_X_USER"]])
+        if "HTTP_X_USER" in req.environ.keys():    
+            quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(req.environ["HTTP_X_USER"])
+        else:
+            quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(req.environ["HTTP_USER_AGENT"])
+        
+	#quota_info = self.client.sync_call(self.binding_name, "getAvailableQuota", [req.environ["HTTP_X_USER"]])
 
         response = create_response(quota_info, status_code=200)
         
@@ -63,7 +66,7 @@ class StackSyncQuotaMiddleware(object):
         
         quota_used_after_put = quota_used + content_uploaded
         if quota_used_after_put > quota_limit:
-            app.logger.error("StackSync Quota: Quota exceeded. Available space: "+str(quota_limit-quota_used))
+            self.app.logger.error("StackSync Quota: Quota exceeded. Available space: "+str(quota_limit-quota_used))
             return create_error_response(413, 'Upload exceeds quota.')
 
         #Notify quota_server for the new quota_used value.
