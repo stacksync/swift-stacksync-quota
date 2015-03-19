@@ -2,6 +2,7 @@
 import os
 from swift.common.swob import wsgify, HTTPUnauthorized
 from swift.common.wsgi import make_pre_authed_request
+from swift.proxy.controllers.base import get_container_info
 
 from util import create_response, is_valid_status, create_error_response
 
@@ -30,7 +31,8 @@ class StackSyncQuotaMiddleware(object):
         self.app.logger.info('StackSync Quota start')
         self.app.logger.info(req.environ)
 
-        response = self.authorize(req)
+        container_info = get_container_info(req.environ, self.app, swift_source='CQ')
+        response = self.authorize(req, container_info)
         if response:
             return response
         
@@ -105,9 +107,10 @@ class StackSyncQuotaMiddleware(object):
         
         return False
     
-    def authorize(self, req):
+    def authorize(self, req, container_info):
         self.app.logger.info('StackSync Quota: authorize: path info: %s', req.path)
         if 'swift.authorize' in req.environ:
+            req.acl = container_info['write_acl']
             response = req.environ['swift.authorize'](req)
             del req.environ['swift.authorize']
             if response:
