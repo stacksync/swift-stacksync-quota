@@ -1,7 +1,7 @@
 
 import json
 from swift.common.swob import Response, HTTPForbidden, HTTPUnauthorized, HTTPBadRequest, HTTPNotFound, \
-    HTTPMethodNotAllowed, HTTPServerError
+    HTTPMethodNotAllowed, HTTPServerError, HTTPRequestEntityTooLarge
 
 
 def create_response(message, status_code=200):
@@ -29,6 +29,8 @@ def create_error_response(error, message):
         response = HTTPNotFound(body=message)
     elif error == 405:
         response = HTTPMethodNotAllowed(body=message)
+    elif error == 413:
+        response = HTTPRequestEntityTooLarge(body=message)
     else:
         response = HTTPServerError(body=message)
 
