@@ -2,7 +2,7 @@
 import os
 from swift.common.swob import wsgify, HTTPUnauthorized
 from swift.common.wsgi import make_pre_authed_request
-from swift.proxy.controllers.base import get_container_info
+from swift.proxy.controllers.base import get_container_info, get_object_info
 
 from util import create_response, is_valid_status, create_error_response
 
@@ -83,9 +83,11 @@ class StackSyncQuotaMiddleware(object):
         quota_limit = long(quota_info['quota_limit'])
         quota_used = long(quota_info['quota_used'])
         
-        head_resp = make_pre_authed_request(env, method='HEAD', path=env['PATH_INFO'], agent='%(orig)s')
-        head_resp = head_resp.get_response(self.app)
-        content_to_delete = long(head_resp.headers['content-length'])
+        object_info = get_object_info(env, self.app, env['PATH_INFO'])
+        if not object_info or not object_info['length']:
+            content_to_delete = 0
+        else:
+            content_to_delete = long(object_info['length'])
         
         quota_used_after_delete = quota_used - content_to_delete
         
