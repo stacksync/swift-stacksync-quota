@@ -2,6 +2,7 @@
 import os
 from swift.common.swob import wsgify, HTTPUnauthorized
 from swift.common.wsgi import make_pre_authed_request
+from swift.common.utils import split_path
 from swift.proxy.controllers.base import get_container_info, get_object_info
 
 from util import create_response, is_valid_status, create_error_response
@@ -39,8 +40,13 @@ class StackSyncQuotaMiddleware(object):
         if not self.valid_request(req):
             # We only want to process PUT and DELETE requests
             return self.app
-            
-        quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(req.environ["HTTP_X_USER"])
+        
+        if "HTTP_X_USER" in req.environ.keys():
+            _, _, container, _ = split_path(request.path, 4, 4, True)
+            quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(container)
+        else:
+            quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(req.environ["HTTP_USER_AGENT"])
+
         #quota_info = self.client.sync_call(self.binding_name, "getAvailableQuota", [req.environ["HTTP_X_USER"]])
 
         response = create_response(quota_info, status_code=200)
@@ -105,8 +111,9 @@ class StackSyncQuotaMiddleware(object):
         
     def valid_request(self, req):
         if (req.method == 'PUT' or req.method == 'DELETE'):
-            return True                                                          
-        
+            if not "HTTP_X_COPY_FROM" in req.environ.keys():
+                return True                                                          
+            return False
         return False
     
     def authorize(self, req, container_info):
