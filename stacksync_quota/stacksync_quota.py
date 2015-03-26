@@ -49,6 +49,7 @@ class StackSyncQuotaMiddleware(object):
 
         #quota_info = self.client.sync_call(self.binding_name, "getAvailableQuota", [req.environ["HTTP_X_USER"]])
 
+
         response = create_response(quota_info, status_code=200)
         
         if not is_valid_status(response.status_int):
@@ -69,7 +70,7 @@ class StackSyncQuotaMiddleware(object):
         
         quota_used_after_put = quota_used + content_uploaded
         if quota_used_after_put > quota_limit:
-            app.logger.error("StackSync Quota: Quota exceeded. Available space: "+str(quota_limit-quota_used))
+            self.app.logger.error("StackSync Quota: Quota exceeded. Available space: "+str(quota_limit-quota_used))
             return create_error_response(413, 'Upload exceeds quota.')
 
         #Notify quota_server for the new quota_used value.
