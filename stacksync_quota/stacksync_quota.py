@@ -42,7 +42,9 @@ class StackSyncQuotaMiddleware(object):
             return self.app
         
         if "HTTP_X_USER" in req.environ.keys():
-            _, _, container, _ = split_path(req.path, 4, 4, True)
+            _, _, container, object = split_path(req.path, 4, 4, True)
+            if not object:
+                return self.app
             quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(container)
         else:
             quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(req.environ["HTTP_USER_AGENT"])
