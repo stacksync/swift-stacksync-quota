@@ -33,8 +33,8 @@ class StackSyncQuotaMiddleware(object):
         self.app.logger.info(req.environ)
         
         #Check if is a call to object
-        _, _, container, object = split_path(req.path, 4, 4, True)
-        if not object:
+        _, _, container, swift_object = split_path(req.path, 0, 4, True)
+        if not swift_object:
             return self.app
         
         #check if is an authorize reqeuest
