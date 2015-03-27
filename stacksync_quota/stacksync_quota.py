@@ -31,26 +31,25 @@ class StackSyncQuotaMiddleware(object):
     def __call__(self, req):
         self.app.logger.info('StackSync Quota start')
         self.app.logger.info(req.environ)
-
+        
+        #Check if is a call to object
+        _, _, container, object = split_path(req.path, 4, 4, True)
+        if not object:
+            return self.app
+        
+        #check if is an authorize reqeuest
         container_info = get_container_info(req.environ, self.app, swift_source='CQ')
         response = self.authorize(req, container_info)
         if response:
             return response
         
+        #check if is a valid request
         if not self.valid_request(req):
             # We only want to process PUT and DELETE requests
             return self.app
-        
-        if "HTTP_X_USER" in req.environ.keys():
-            _, _, container, object = split_path(req.path, 4, 4, True)
-            if not object:
-                return self.app
-            quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(container)
-        else:
-            quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(req.environ["HTTP_USER_AGENT"])
 
-        #quota_info = self.client.sync_call(self.binding_name, "getAvailableQuota", [req.environ["HTTP_X_USER"]])
 
+        quota_info = self.rpc_server.XmlRpcQuotaHandler.getAvailableQuota(container)
 
         response = create_response(quota_info, status_code=200)
         
