@@ -10,22 +10,15 @@ from util import create_response, is_valid_status, create_error_response
 import xmlrpclib
 from swift.common.utils import get_logger
 import json
-from client import Client
 
 class StackSyncQuotaMiddleware(object):
     def __init__(self, app, conf):
         self.app = app
         host = conf.get('stacksync_quota_host', '127.0.0.1').lower()
         port = int(conf.get('stacksync_quota_port', 62345))
-#         user = conf.get('omq_user', 'guest')
-#         password = conf.get('omq_pass', 'guest')
-#         exchange = conf.get('omq_exchange', 'rpc_global_exchange')
-#         self.binding_name = conf.get('binding_name', 'IOmqQuotaHandler')
         self.app.logger = get_logger(conf, log_route='stacksync_quota')
         self.rpc_server = xmlrpclib.ServerProxy("http://"+host+":"+str(port))
         self.app.logger.info('StackSync Quota: Init OK')
-#         env = {'user': user, 'pass': password, 'host' : host, 'port': port, 'exchange': exchange}
-#         self.client = Client(env)
 
     @wsgify
     def __call__(self, req):
