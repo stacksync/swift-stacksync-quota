@@ -49,7 +49,7 @@ class StackSyncQuotaMiddleware(object):
         if not is_valid_status(response.status_int):
             if response.status_int == 404:
                 # User not found. No StackSync user
-                self.app
+                return self.app
             else:
                 self.app.logger.error("StackSync Quota: status code: %s. body: %s", str(response.status_int), str(response.body))
                 return response
